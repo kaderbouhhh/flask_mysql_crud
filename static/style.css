@@ -1,0 +1,44 @@
+body {
+
+    /*background-image: url('images/bg.jpeg'); /* Replace with your image path */
+   /* background-size: cover; /* Makes sure the image covers the entire background */
+    /*background-position: center; /* Centers the image */
+   /* background-repeat: no-repeat; /* Prevents the image from repeating */
+   /* background-attachment: fixed; /* Keeps the image fixed when scrolling */
+}
+/* CSS rule for changing background color on hover */
+.hover_blue:hover {
+    background-color: #767b7f; /* Bootstrap primary blue color */
+    color: white; /* Change text color to white for better contrast */
+}
+
+.hover_blue {
+   cursor: pointer;
+}
+
+/* Reduce padding inside navbar items for smaller screens */
+@media (max-width: 768px) {
+    .navbar-nav .nav-item {
+        padding: 0.5rem;
+    }
+
+    /* Adjust brand image size */
+    .navbar-brand img {
+        width: 25px;
+        height: 25px;
+    }
+}
+
+.ubmenu {
+    text-decoration: none;
+    color: darkslategray;
+    cursor: pointer;
+    border-left: 1px solid black;
+    padding: 6px;
+    background-color: lightgrey;
+}
+.ubmenu:hover {
+    text-decoration: none;
+    color: blue;
+}
+

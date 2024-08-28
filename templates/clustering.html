@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container bg-white px-3 py-1">
+    <h1>Clustering Analysis</h1>
+    <p>Upload your dataset to perform clustering analysis, visualize clusters, and build models.</p>
+
+    <!-- Form to upload dataset -->
+    <form id="uploadForm" method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="dataset">Upload Dataset (CSV):</label>
+            <input type="file" class="form-control-file" id="dataset" name="dataset" accept=".csv" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Upload and Process</button>
+    </form>
+
+    <!-- Form to select features for clustering -->
+    <div id="featureSelection" class="mt-4 d-none">
+        <h4>Select Features for Clustering</h4>
+        <form id="visualizeForm">
+            <div class="form-group">
+                <label for="features">Select Features (X):</label>
+                <select class="form-control" id="features" name="features" multiple required>
+                    <!-- Options will be populated dynamically -->
+                </select>
+            </div>
+            <button type="button" id="visualizeBtn" class="btn btn-info">Visualize Data</button>
+            <button type="button" id="trainModelBtn" class="btn btn-success">Train Clustering Model</button>
+        </form>
+    </div>
+
+    <!-- Visualization section -->
+    <div id="visualization" class="mt-5 d-none">
+        <h4>Data Visualization</h4>
+        <div id="graphs">
+            <!-- Graphs will be rendered here -->
+        </div>
+    </div>
+
+    <!-- Model Training section -->
+    <div id="modelTraining" class="mt-5 d-none">
+        <h4>Clustering Model Training</h4>
+        <p>Model details and performance will be displayed here.</p>
+        <div id="modelOutput">
+            <!-- Model output will be rendered here -->
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Handle file upload form submission
+        document.getElementById('uploadForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch('{{ url_for("upload_and_process_clustering") }}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Populate features options
+                const featuresSelect = document.getElementById('features');
+                featuresSelect.innerHTML = '';
+                data.columns.forEach(column => {
+                    const option = document.createElement('option');
+                    option.value = column;
+                    option.text = column;
+                    featuresSelect.add(option);
+                });
+                document.getElementById('featureSelection').classList.remove('d-none');
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+        // Handle visualization button click
+        document.getElementById('visualizeBtn').addEventListener('click', function () {
+            const selectedFeatures = Array.from(document.getElementById('features').selectedOptions).map(option => option.value);
+
+            fetch('{{ url_for("visualize_clustering_data") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ features: selectedFeatures })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);  // Handle errors returned from the server
+                    return;
+                }
+
+                // Render graphs
+                const graphsDiv = document.getElementById('graphs');
+                graphsDiv.innerHTML = '';
+                data.graphs.forEach(graph => {
+                    const img = document.createElement('img');
+                    img.src = 'data:image/png;base64,' + graph;
+                    img.classList.add('img-fluid');
+                    graphsDiv.appendChild(img);
+                });
+                document.getElementById('visualization').classList.remove('d-none');
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+        // Handle model training button click
+        document.getElementById('trainModelBtn').addEventListener('click', function () {
+            const selectedFeatures = Array.from(document.getElementById('features').selectedOptions).map(option => option.value);
+
+            fetch('{{ url_for("train_clustering_model") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ features: selectedFeatures })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Display model output
+                const modelOutputDiv = document.getElementById('modelOutput');
+                modelOutputDiv.innerHTML = `<p>Model: ${data.model}</p><p>Cluster Centers: ${data.cluster_centers}</p>`;
+                document.getElementById('modelTraining').classList.remove('d-none');
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+</script>
+
+{% endblock %}

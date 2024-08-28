@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container w-50 shadow p-5 my-5 bg-white">
+    <h2>Update Book</h2>
+    <form method="POST" action="{{ url_for('update', id=book.id) }}" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="title">Title</label>
+            <input type="text" class="form-control" id="title" name="title" value="{{ book.title }}" required>
+        </div>
+        <div class="form-group">
+            <label for="author">Author</label>
+            <input type="text" class="form-control" id="author" name="author" value="{{ book.author }}" required>
+        </div>
+        <div class="form-group">
+            <label for="cover_image">Cover Image</label>
+            <input type="file" class="form-control" id="cover_image" name="cover_image">
+            <img src="{{ url_for('static', filename=book.cover_image if book.cover_image else 'uploads/default.png') }}" alt="Cover Image" width="100">
+        </div>
+        <button type="submit" class="btn btn-primary">Update</button>
+    </form>
+</div>
+{% endblock %}

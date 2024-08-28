@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container bg-white px-3 py-1">
+    <h1>Classification Analysis</h1>
+    <p>Upload your dataset to perform classification analysis, visualize data, and build models.</p>
+
+    <!-- Form to upload dataset -->
+    <form id="uploadForm" method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="dataset">Upload Dataset (CSV):</label>
+            <input type="file" class="form-control-file" id="dataset" name="dataset" accept=".csv" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Upload and Process</button>
+    </form>
+
+    <!-- Form to select features and labels -->
+    <div id="featureSelection" class="mt-4 d-none">
+        <h4>Select Features and Label</h4>
+        <form id="visualizeForm">
+            <div class="form-group">
+                <label for="features">Select Features (X):</label>
+                <select class="form-control" id="features" name="features" multiple required>
+                    <!-- Options will be populated dynamically -->
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="label">Select Label (Y):</label>
+                <select class="form-control" id="label" name="label" required>
+                    <!-- Options will be populated dynamically -->
+                </select>
+            </div>
+            <button type="button" id="visualizeBtn" class="btn btn-info">Visualize Data</button>
+            <button type="button" id="trainModelBtn" class="btn btn-success">Train Classification Model</button>
+        </form>
+    </div>
+
+    <!-- Visualization section -->
+    <div id="visualization" class="mt-5 d-none">
+        <h4>Data Visualization</h4>
+        <div id="graphs">
+            <!-- Graphs will be rendered here -->
+        </div>
+    </div>
+
+    <!-- Model Training section -->
+    <div id="modelTraining" class="mt-5 d-none">
+        <h4>Classification Model Training</h4>
+        <p>Model details and performance will be displayed here.</p>
+        <div id="modelOutput">
+            <!-- Model output will be rendered here -->
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Handle file upload form submission
+        document.getElementById('uploadForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch('{{ url_for("upload_and_process_classification") }}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Populate features and label options
+                const featuresSelect = document.getElementById('features');
+                const labelSelect = document.getElementById('label');
+                featuresSelect.innerHTML = '';
+                labelSelect.innerHTML = '';
+                data.columns.forEach(column => {
+                    const option = document.createElement('option');
+                    option.value = column;
+                    option.text = column;
+                    featuresSelect.add(option.cloneNode(true));
+                    labelSelect.add(option);
+                });
+                document.getElementById('featureSelection').classList.remove('d-none');
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+        // Handle visualization button click
+        document.getElementById('visualizeBtn').addEventListener('click', function () {
+            const selectedFeatures = Array.from(document.getElementById('features').selectedOptions).map(option => option.value);
+            const selectedLabel = document.getElementById('label').value;
+
+            fetch('{{ url_for("visualize_classification_data") }}', {  // Ensure this matches the endpoint in app.py
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ features: selectedFeatures, label: selectedLabel })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);  // Handle errors returned from the server
+                    return;
+                }
+
+                // Render graphs
+                const graphsDiv = document.getElementById('graphs');
+                graphsDiv.innerHTML = '';
+                data.graphs.forEach(graph => {
+                    const img = document.createElement('img');
+                    img.src = 'data:image/png;base64,' + graph;
+                    img.classList.add('img-fluid');
+                    graphsDiv.appendChild(img);
+                });
+                document.getElementById('visualization').classList.remove('d-none');
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+</script>
+
+
+{% endblock %}

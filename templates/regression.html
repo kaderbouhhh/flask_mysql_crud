@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container bg-white px-3 py-1">
+    <h1>Regression Analysis</h1>
+    <p>Upload your dataset to perform regression analysis, visualize data, and build models.</p>
+
+    <!-- Form to upload dataset -->
+    <form id="uploadForm" method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="dataset">Upload Dataset (CSV):</label>
+            <input type="file" class="form-control-file" id="dataset" name="dataset" accept=".csv" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Upload and Process</button>
+    </form>
+
+    <!-- Main Row: Contains both the form and the visualization side by side -->
+    <div class="row mt-4 mx-2 border-top d-none" id="featureSelection">
+        <!-- Left Column: Form for selecting features, label, and plot types -->
+        <div class="col-md-5 p-3 bg-light">
+            <h4>Select Features, Label, and Plot Types</h4>
+            <form id="visualizeForm">
+                <div class="form-group">
+                    <label for="features">Select Features (X):</label>
+                    <select class="form-control" id="features" name="features" multiple required>
+                        <!-- Options will be populated dynamically -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="label">Select Label (Y):</label>
+                    <select class="form-control" id="label" name="label" required>
+                        <!-- Options will be populated dynamically -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="plotTypes">Select Plot Types:</label>
+                    <select class="form-control" id="plotTypes" name="plotTypes" multiple required>
+                        <option value="scatter">Scatter Plot</option>
+                        <option value="histogram">Histogram</option>
+                        <option value="boxplot">Boxplot</option>
+                        <option value="heatmap">Heatmap</option>
+                    </select>
+                </div>
+                <button type="button" id="visualizeBtn" class="btn btn-info">Visualize Data</button>
+                <button type="button" id="trainModelBtn" class="btn btn-success">Train Regression Model</button>
+            </form>
+        </div>
+
+        <!-- Right Column: Visualization area -->
+        <div class="col-md-7 p-3">
+            <!-- Visualization section -->
+            <div id="visualization" class="d-none mb-5">
+                <h4 class="text-center">Data Visualization</h4>
+                <div id="graphs">
+                    <!-- Graphs will be rendered here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Model Training section below the main row -->
+   <!-- Model Training section below the main row -->
+<div class="row m-3 border-top p-5">
+    <div class="col-md-5">
+        <div id="modelTraining" class="d-none">
+            <h4>Regression Model Training</h4>
+            <p>Model details and performance will be displayed here.</p>
+            <div id="modelOutput">
+                <!-- Model output will be rendered here -->                   
+            </div>
+            <button type="button" id="deployModelBtn" class="btn btn-success">Deploy your Model</button>
+        </div>
+    </div>
+    <div class="col-md-7">
+        <div id="modeldeploying" class="d-none">
+            <h4>Make Predictions</h4>
+            <form id="predictionForm">
+                <div class="form-group">
+                    <label for="predictFeatures">Input Features:</label>
+                    <div id="predictFeaturesContainer">
+                        <!-- Input fields for features will be dynamically added here -->
+                    </div>
+                </div>
+                <button type="button" id="predictBtn" class="btn btn-primary">Predict</button>
+            </form>
+            <div id="predictionOutput" class="mt-3">
+                <!-- Prediction results will be rendered here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Handle file upload form submission
+        document.getElementById('uploadForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch('{{ url_for("upload_and_process") }}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Populate features and label options
+                const featuresSelect = document.getElementById('features');
+                const labelSelect = document.getElementById('label');
+                featuresSelect.innerHTML = '';
+                labelSelect.innerHTML = '';
+                data.columns.forEach(column => {
+                    const option = document.createElement('option');
+                    option.value = column;
+                    option.text = column;
+                    featuresSelect.add(option.cloneNode(true));
+                    labelSelect.add(option);
+                });
+                document.getElementById('featureSelection').classList.remove('d-none');
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    
+        // Handle visualization button click
+        document.getElementById('visualizeBtn').addEventListener('click', function () {
+            const selectedFeatures = Array.from(document.getElementById('features').selectedOptions).map(option => option.value);
+            const selectedLabel = document.getElementById('label').value;
+            const selectedPlotTypes = Array.from(document.getElementById('plotTypes').selectedOptions).map(option => option.value);
+    
+            fetch('{{ url_for("visualize_data") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ features: selectedFeatures, label: selectedLabel, plot_types: selectedPlotTypes })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);  // Handle errors returned from the server
+                    return;
+                }
+    
+                // Render graphs
+                const graphsDiv = document.getElementById('graphs');
+                graphsDiv.innerHTML = '';
+                data.graphs.forEach(graph => {
+                    const img = document.createElement('img');
+                    img.src = 'data:image/png;base64,' + graph;
+                    img.classList.add('img-fluid');
+                    graphsDiv.appendChild(img);
+                });
+                document.getElementById('visualization').classList.remove('d-none');
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    
+        // Handle model training button click
+        document.getElementById('trainModelBtn').addEventListener('click', function () {
+            const selectedFeatures = Array.from(document.getElementById('features').selectedOptions).map(option => option.value);
+            const selectedLabel = document.getElementById('label').value;
+    
+            fetch('{{ url_for("train_model") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ features: selectedFeatures, label: selectedLabel })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Display model output
+                const modelOutputDiv = document.getElementById('modelOutput');
+                modelOutputDiv.innerHTML = `<p>Model: ${data.model}</p><p>R<sup>2</sup> Score: ${data.r2_score}</p><p>Mean Squared Error: ${data.mse}</p>`;
+                document.getElementById('modelTraining').classList.remove('d-none');
+                
+                // Populate prediction form
+                const predictFeaturesContainer = document.getElementById('predictFeaturesContainer');
+                predictFeaturesContainer.innerHTML = '';
+                data.features.forEach(feature => {
+                    const inputGroup = document.createElement('div');
+                    inputGroup.classList.add('form-group');
+                    const label = document.createElement('label');
+                    label.textContent = feature;
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.classList.add('form-control');
+                    input.id = feature;
+                    input.name = feature;
+                    input.placeholder = `Enter ${feature}`;
+                    inputGroup.appendChild(label);
+                    inputGroup.appendChild(input);
+                    predictFeaturesContainer.appendChild(inputGroup);
+                });
+                
+                document.getElementById('modeldeploying').classList.remove('d-none');
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    
+        // Handle prediction button click
+        document.getElementById('predictBtn').addEventListener('click', function () {
+            const inputs = Array.from(document.querySelectorAll('#predictFeaturesContainer input'));
+            const featureValues = {};
+            inputs.forEach(input => {
+                featureValues[input.name] = input.value;
+            });
+    
+            fetch('{{ url_for("make_prediction") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(featureValues)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);  // Handle errors returned from the server
+                    return;
+                }
+    
+                // Display prediction result
+                const predictionOutputDiv = document.getElementById('predictionOutput');
+                predictionOutputDiv.innerHTML = `<p>Prediction: ${data.prediction}</p>`;
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+    
+</script>
+
+{% endblock %}

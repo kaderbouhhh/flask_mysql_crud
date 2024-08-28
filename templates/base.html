@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask MongoDB CRUD</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.css">
+   <!-- Bootstrap CSS -->
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Bootstrap JS -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+</head>
+<body class="bg-light">
+  
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        
+            <!-- Navbar Brand -->
+            <div class="btn-group d-flex align-items-center mr-3"> 
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Book Library Logo" width="40" height="40" class="mr-2">
+                <h4 class="mb-0 ms-3 text-white">Books Collection</h4>
+            </div>
+    
+            <!-- Navbar Toggler (Button for smaller screens) -->
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+    
+            <!-- Navbar Links (collapsible) -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item active mx-2 border-left rounded">
+                        <a class="nav-link" href="{{ url_for('index') }}">Home</a>
+                    </li>
+                    <li class="nav-item mr-2 border-left">
+                        <a class="nav-link" href="{{ url_for('add') }}">Add Book</a>
+                    </li>
+    
+                    <!-- Machine Learning Dropdown -->
+                    <li class="nav-item dropdown mr-2 border-left rounded">
+                        <a class="nav-link dropdown-toggle" href="#" id="mlDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Machine Learning
+                        </a>
+                        <div class="dropdown-menu bg-secondary" aria-labelledby="mlDropdown">
+                            <a class="dropdown-item text-light border-bottom" href="{{ url_for('classification') }}">Classification</a>
+                            <a class="dropdown-item text-light border-bottom" href="{{ url_for('regression') }}">Regression</a>
+                            <a class="dropdown-item text-light" href="{{ url_for('clustering') }}">Clustering</a>
+                        </div>
+                    </li>
+    
+                    <!-- Deep Learning Dropdown -->
+                    <li class="nav-item dropdown border-left rounded">
+                        <a class="nav-link dropdown-toggle" href="#" id="dlDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Deep Learning
+                        </a>
+                        <div class="dropdown-menu bg-secondary" aria-labelledby="dlDropdown">
+                            <a class="dropdown-item text-light border-bottom" href="{{ url_for('classification') }}">Classification</a>
+                            <a class="dropdown-item text-light border-bottom" href="{{ url_for('regression') }}">Regression</a>
+                            <a class="dropdown-item text-light" href="{{ url_for('clustering') }}">Clustering</a>
+                        </div>
+                    </li>
+                </ul>
+    
+                <!-- Right-aligned links -->
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('clustering') }}">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('clustering') }}">Register</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('clustering') }}">Dashboard</a>
+                    </li>
+                </ul>
+            </div>
+    
+    </nav>
+    
+    
+        {% block content %}{% endblock %}
+
+
+    <!-- jQuery and DataTables JS -->
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.js"></script>
+
+    <!-- Initialize DataTables -->
+    <script>
+        $(document).ready(function() {
+            $('#booksTable').DataTable();
+        });
+    </script>
+</body>
+</html>
